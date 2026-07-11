@@ -1,0 +1,106 @@
+/* Hermes Mission Control — design tokens (UI-COL, UI-TYP, UI-SHP)
+   No raw hex outside this file. */
+
+:root,
+.dark {
+  --bg-0: #101418;
+  --bg-1: #171c22;
+  --bg-2: #1f262e;
+  --ink-0: #e8edf2;
+  --ink-1: #9aa7b4;
+  --line: #2a333d;
+  --accent: #5b8def;
+  --live: #3ecfb2;
+  --warn: #e8a13c;
+  --fail: #e05c5c;
+  --ok: #57b96a;
+
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-ui: "Inter", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --radius-control: 6px;
+  --radius-card: 10px;
+  --motion: 150ms ease-out;
+  --rail: 72px;
+  --rail-expanded: 240px;
+  --spine: 320px;
+}
+
+.light {
+  --bg-0: #f4f6f8;
+  --bg-1: #ffffff;
+  --bg-2: #e8edf2;
+  --ink-0: #141a20;
+  --ink-1: #5a6875;
+  --line: #d0d7de;
+  --accent: #3a6fd8;
+  --live: #1f9a84;
+  --warn: #c47f18;
+  --fail: #c43d3d;
+  --ok: #3d8f4e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@theme inline {
+  --color-bg-0: var(--bg-0);
+  --color-bg-1: var(--bg-1);
+  --color-bg-2: var(--bg-2);
+  --color-ink-0: var(--ink-0);
+  --color-ink-1: var(--ink-1);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-live: var(--live);
+  --color-warn: var(--warn);
+  --color-fail: var(--fail);
+  --color-ok: var(--ok);
+  --font-display: var(--font-display);
+  --font-ui: var(--font-ui);
+  --font-mono: var(--font-mono);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--bg-0);
+  color: var(--ink-0);
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+@media (max-width: 639px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+/* Status pulse for Spine running nodes */
+@keyframes spine-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.spine-pulse {
+  animation: spine-breathe 2s ease-in-out infinite;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
