@@ -7,8 +7,8 @@ import { Mono } from '@/shared/ui/Mono'
 export function EvaluationsPage() {
   const { data } = useEvaluations()
   return (
-    <div className="mx-auto max-w-5xl p-4 md:p-6">
-      <h1 className="mb-4 font-display text-[26px] font-bold">Evaluations</h1>
+    <div className="page anim-in">
+      <h1 className="page-title mb-4">Evaluations</h1>
       <div className="space-y-3">
         {data?.map((e) => (
           <Card key={e.id}>

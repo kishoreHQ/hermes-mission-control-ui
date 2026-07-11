@@ -1,19 +1,28 @@
-/* Hermes Mission Control — design tokens (UI-COL, UI-TYP, UI-SHP)
-   No raw hex outside this file. */
+/* Hermes Mission Control — design tokens
+   Flight-operations console: calm graphite, state is loud, chrome is quiet. */
 
 :root,
 .dark {
-  --bg-0: #101418;
-  --bg-1: #171c22;
-  --bg-2: #1f262e;
-  --ink-0: #e8edf2;
-  --ink-1: #9aa7b4;
-  --line: #2a333d;
+  --bg-0: #0c0f13;
+  --bg-1: #12171d;
+  --bg-2: #1a2129;
+  --bg-3: #222b35;
+  --ink-0: #eef2f6;
+  --ink-1: #8b9aab;
+  --ink-2: #5c6b7a;
+  --line: #24303c;
+  --line-strong: #334152;
   --accent: #5b8def;
+  --accent-dim: rgba(91, 141, 239, 0.12);
+  --accent-glow: rgba(91, 141, 239, 0.25);
   --live: #3ecfb2;
+  --live-dim: rgba(62, 207, 178, 0.12);
   --warn: #e8a13c;
+  --warn-dim: rgba(232, 161, 60, 0.14);
   --fail: #e05c5c;
+  --fail-dim: rgba(224, 92, 92, 0.12);
   --ok: #57b96a;
+  --ok-dim: rgba(87, 185, 106, 0.12);
 
   --font-display: "Archivo", system-ui, sans-serif;
   --font-ui: "Inter", system-ui, sans-serif;
@@ -21,24 +30,37 @@
 
   --radius-control: 6px;
   --radius-card: 10px;
-  --motion: 150ms ease-out;
-  --rail: 72px;
-  --rail-expanded: 240px;
-  --spine: 320px;
+  --radius-lg: 14px;
+  --motion: 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --rail: 68px;
+  --rail-expanded: 232px;
+  --spine: 300px;
+
+  --surface-grid: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(91, 141, 239, 0.06), transparent 55%);
 }
 
 .light {
-  --bg-0: #f4f6f8;
+  --bg-0: #f0f3f7;
   --bg-1: #ffffff;
-  --bg-2: #e8edf2;
-  --ink-0: #141a20;
-  --ink-1: #5a6875;
-  --line: #d0d7de;
+  --bg-2: #e8edf3;
+  --bg-3: #dde4ec;
+  --ink-0: #121820;
+  --ink-1: #5a6878;
+  --ink-2: #8795a5;
+  --line: #d5dde6;
+  --line-strong: #b8c4d0;
   --accent: #3a6fd8;
-  --live: #1f9a84;
+  --accent-dim: rgba(58, 111, 216, 0.1);
+  --accent-glow: rgba(58, 111, 216, 0.18);
+  --live: #1a9a82;
+  --live-dim: rgba(26, 154, 130, 0.1);
   --warn: #c47f18;
+  --warn-dim: rgba(196, 127, 24, 0.12);
   --fail: #c43d3d;
-  --ok: #3d8f4e;
+  --fail-dim: rgba(196, 61, 61, 0.1);
+  --ok: #2f8f45;
+  --ok-dim: rgba(47, 143, 69, 0.1);
+  --surface-grid: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(58, 111, 216, 0.05), transparent 55%);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -55,9 +77,12 @@
   --color-bg-0: var(--bg-0);
   --color-bg-1: var(--bg-1);
   --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
   --color-ink-0: var(--ink-0);
   --color-ink-1: var(--ink-1);
+  --color-ink-2: var(--ink-2);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-accent: var(--accent);
   --color-live: var(--live);
   --color-warn: var(--warn);
@@ -77,6 +102,9 @@ body,
   color: var(--ink-0);
   font-family: var(--font-ui);
   font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 @media (max-width: 639px) {
@@ -85,14 +113,15 @@ body,
   }
 }
 
-/* Status pulse for Spine running nodes */
 @keyframes spine-breathe {
   0%,
   100% {
     opacity: 1;
+    box-shadow: 0 0 0 0 transparent;
   }
   50% {
-    opacity: 0.45;
+    opacity: 0.55;
+    box-shadow: 0 0 8px 1px color-mix(in srgb, var(--live) 50%, transparent);
   }
 }
 
@@ -100,7 +129,44 @@ body,
   animation: spine-breathe 2s ease-in-out infinite;
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.anim-in {
+  animation: fade-in var(--motion) both;
+}
+
 *:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Scrollbars — quiet */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::selection {
+  background: var(--accent-dim);
+  color: var(--ink-0);
 }

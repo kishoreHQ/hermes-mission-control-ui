@@ -15,11 +15,11 @@ export function ReplayPage() {
   const banner = useMemo(() => 'REPLAY — read-only reconstruction', [])
 
   return (
-    <div className="mx-auto max-w-4xl p-4 md:p-6">
+    <div className="page anim-in max-w-4xl">
       <div className="mb-4 rounded-[6px] border border-accent/40 bg-accent/10 px-3 py-2 text-center text-[13px] font-semibold text-accent">
         {banner}
       </div>
-      <h1 className="mb-1 font-display text-[26px] font-bold">Replay</h1>
+      <h1 className="page-title">Replay</h1>
       <Mono className="mb-4 block">{runId}</Mono>
 
       <Card className="mb-4">

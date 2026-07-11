@@ -47,8 +47,8 @@ export function MissionDetailPage() {
   const m = mission.data!
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
+    <div className="flex h-full min-h-0 flex-col anim-in">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-bg-1/50 px-4 py-3.5">
         <div>
           <div className="text-[12px] text-ink-1">
             <Link to="/" className="text-accent">
@@ -56,7 +56,7 @@ export function MissionDetailPage() {
             </Link>{' '}
             / <Mono className="text-ink-0">{m.id}</Mono>
           </div>
-          <h1 className="font-display text-[20px] font-bold">{m.name}</h1>
+          <h1 className="font-display text-[18px] font-bold tracking-tight">{m.name}</h1>
         </div>
         <StatusDot status={m.state} label={m.state.replaceAll('_', ' ')} />
       </header>

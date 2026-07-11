@@ -3,14 +3,103 @@
 
 body {
   font-family: var(--font-ui);
+  background: var(--bg-0);
+  background-image: var(--surface-grid);
+  background-attachment: fixed;
 }
 
 .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .font-mono {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+
+/* Page canvas */
+.page {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: 1.25rem 1.5rem 2.5rem;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 1rem 1rem 5.5rem;
+  }
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 1.625rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--ink-0);
+}
+
+.page-sub {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--ink-1);
+}
+
+/* Section label */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-1);
+}
+
+/* Input polish */
+.input {
+  min-height: 2.5rem;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--line);
+  background: var(--bg-1);
+  color: var(--ink-0);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  transition: border-color var(--motion), background var(--motion);
+}
+.input::placeholder {
+  color: var(--ink-2);
+}
+.input:hover {
+  border-color: var(--line-strong);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+/* Status left rail on cards */
+.card-state-running {
+  border-left: 3px solid var(--live);
+}
+.card-state-awaiting_approval {
+  border-left: 3px solid var(--warn);
+  background: linear-gradient(90deg, var(--warn-dim), var(--bg-1) 40%);
+}
+.card-state-queued {
+  border-left: 3px solid var(--ink-2);
+}
+.card-state-succeeded {
+  border-left: 3px solid var(--ok);
+}
+.card-state-failed {
+  border-left: 3px solid var(--fail);
+}
+.card-state-cancelled {
+  border-left: 3px solid var(--ink-2);
 }

@@ -22,8 +22,8 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-4 md:p-6">
-      <h1 className="font-display text-[26px] font-bold">Settings</h1>
+    <div className="page anim-in max-w-3xl space-y-6">
+      <h1 className="page-title">Settings</h1>
 
       <Card>
         <h2 className="mb-2 font-display font-semibold">Profile connection</h2>

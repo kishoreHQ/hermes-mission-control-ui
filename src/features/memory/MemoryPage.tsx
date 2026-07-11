@@ -24,8 +24,8 @@ export function MemoryPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl p-4 md:p-6">
-      <h1 className="mb-4 font-display text-[26px] font-bold">Memory & knowledge</h1>
+    <div className="page anim-in">
+      <h1 className="page-title mb-4">Memory & knowledge</h1>
       <div className="mb-4 flex flex-wrap gap-2">
         <input
           className="min-h-11 min-w-[240px] flex-1 rounded-[6px] border border-line bg-bg-1 px-3"

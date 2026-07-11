@@ -15,8 +15,8 @@ export function FleetPage() {
   const q = useRegistry(tab)
 
   return (
-    <div className="mx-auto max-w-6xl p-4 md:p-6">
-      <h1 className="mb-4 font-display text-[26px] font-bold">Fleet</h1>
+    <div className="page anim-in">
+      <h1 className="page-title mb-4">Fleet</h1>
       <div className="mb-4 flex gap-1 border-b border-line">
         {tabs.map((t) => (
           <button

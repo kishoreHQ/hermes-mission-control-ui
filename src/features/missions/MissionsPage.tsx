@@ -4,7 +4,7 @@ import { useLaunchMission, useMissions } from '@/shared/api/hooks'
 import { Card } from '@/shared/ui/Card'
 import { Button } from '@/shared/ui/Button'
 import { Badge } from '@/shared/ui/Badge'
-import { StatusDot } from '@/shared/ui/StatusDot'
+import { StatusPill } from '@/shared/ui/StatusDot'
 import { Mono } from '@/shared/ui/Mono'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { ErrorState } from '@/shared/ui/ErrorState'
@@ -13,6 +13,8 @@ import { useUi } from '@/shared/store/ui'
 import type { Mission, MissionState } from '@/shared/types/host'
 import { detectProfile } from '@/profiles/detect'
 import { HostApiError } from '@/shared/api/client'
+import { IconPlus, IconSearch } from '@/shared/ui/Icons'
+import { cn } from '@/shared/lib/cn'
 
 const groups: { key: MissionState | 'recent'; title: string; filter: (m: Mission) => boolean }[] = [
   { key: 'running', title: 'Running', filter: (m) => m.state === 'running' },
@@ -24,6 +26,12 @@ const groups: { key: MissionState | 'recent'; title: string; filter: (m: Mission
     filter: (m) => m.state === 'succeeded' || m.state === 'failed' || m.state === 'cancelled',
   },
 ]
+
+function formatElapsed(ms: number) {
+  if (ms < 1000) return `${ms}ms`
+  if (ms < 60000) return `${(ms / 1000).toFixed(0)}s`
+  return `${Math.floor(ms / 60000)}m ${Math.floor((ms % 60000) / 1000)}s`
+}
 
 export function MissionsPage() {
   const { data, isLoading, error, refetch } = useMissions()
@@ -48,30 +56,37 @@ export function MissionsPage() {
       })
       toast('Mission launched', 'ok')
     } catch (e) {
-      const err = e as HostApiError
-      toast(err.message, 'fail')
+      toast((e as HostApiError).message, 'fail')
     }
   }
 
   return (
-    <div className="mx-auto max-w-6xl p-4 md:p-6">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div className="page anim-in">
+      <header className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-[26px] font-bold tracking-tight">Missions</h1>
-          <p className="text-[13px] text-ink-1">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-2">Operations</p>
+          <h1 className="page-title">Missions</h1>
+          <p className="page-sub">
             {profile.label}
-            {profile.useMocks ? ' · mock Host Interface' : ' · live Host Interface'}
+            <span className="text-ink-2"> · </span>
+            {profile.useMocks ? 'mock Host Interface' : 'live Host Interface'}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <input
-            className="min-h-11 rounded-[6px] border border-line bg-bg-1 px-3 text-[14px] outline-none focus:border-accent"
-            placeholder="Search missions… ⌘K"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            aria-label="Search missions"
-          />
+          <div className="relative">
+            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-2">
+              <IconSearch />
+            </span>
+            <input
+              className="input w-[min(100vw-2rem,16rem)] pl-8"
+              placeholder="Search missions…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              aria-label="Search missions"
+            />
+          </div>
           <Button onClick={onLaunch} disabled={launch.isPending}>
+            <IconPlus />
             Launch mission
           </Button>
         </div>
@@ -79,8 +94,9 @@ export function MissionsPage() {
 
       {isLoading && (
         <div className="grid gap-3 md:grid-cols-2">
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
+          <Skeleton className="h-36" />
+          <Skeleton className="h-36" />
+          <Skeleton className="h-36" />
         </div>
       )}
       {error && (
@@ -93,7 +109,7 @@ export function MissionsPage() {
       {!isLoading && !error && filtered.length === 0 && (
         <EmptyState
           title="No missions yet"
-          body="Launch one, or run an example workflow from the Agent OS CLI."
+          body="Launch one from here, or run an example from the Agent OS CLI. The Mission Spine will light up as work starts."
           actionLabel="Launch mission"
           onAction={onLaunch}
         />
@@ -105,10 +121,21 @@ export function MissionsPage() {
           const items = filtered.filter(g.filter)
           if (!items.length) return null
           return (
-            <section key={g.key} className="mb-8" aria-labelledby={`g-${g.key}`}>
-              <h2 id={`g-${g.key}`} className="mb-3 font-display text-[16px] font-semibold">
+            <section key={g.key} className="mb-9" aria-labelledby={`g-${g.key}`}>
+              <h2 id={`g-${g.key}`} className="section-label">
+                <span
+                  className={cn(
+                    'h-1.5 w-1.5 rounded-full',
+                    g.key === 'running' && 'bg-live spine-pulse',
+                    g.key === 'awaiting_approval' && 'bg-warn',
+                    g.key === 'queued' && 'bg-ink-2',
+                    g.key === 'recent' && 'bg-ink-1',
+                  )}
+                />
                 {g.title}
-                <span className="ml-2 font-mono text-[12px] text-ink-1">{items.length}</span>
+                <span className="font-mono text-[11px] font-normal normal-case tracking-normal text-ink-2">
+                  {items.length}
+                </span>
               </h2>
               <div className="grid gap-3 md:grid-cols-2">
                 {items.map((m) => (
@@ -123,30 +150,51 @@ export function MissionsPage() {
 }
 
 function MissionCard({ m }: { m: Mission }) {
+  const phasePct =
+    m.state === 'succeeded' ? 100 : m.state === 'failed' ? 100 : m.state === 'queued' ? 8 : m.state === 'awaiting_approval' ? 65 : 45
+
   return (
-    <Link to={`/missions/${m.id}`} className="block focus:outline-none">
-      <Card className="transition-colors hover:bg-bg-2">
-        <div className="mb-2 flex items-start justify-between gap-2">
-          <div>
-            <div className="font-display text-[16px] font-semibold">{m.name}</div>
-            <Mono>{m.id}</Mono>
+    <Link to={`/missions/${m.id}`} className="group block focus:outline-none">
+      <Card
+        className={cn(
+          'card-state-' + m.state,
+          'h-full p-4 hover:border-line-strong hover:bg-bg-2/40 group-focus-visible:ring-2 group-focus-visible:ring-accent',
+        )}
+      >
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="truncate font-display text-[15px] font-semibold tracking-tight text-ink-0 group-hover:text-accent">
+              {m.name}
+            </div>
+            <Mono className="mt-0.5 block truncate">{m.id}</Mono>
           </div>
-          <StatusDot
-            status={m.state === 'awaiting_approval' ? 'awaiting_approval' : m.state}
-            label={m.state.replaceAll('_', ' ')}
-          />
+          <StatusPill status={m.state} />
         </div>
-        <p className="mb-3 line-clamp-2 text-[13px] text-ink-1">{m.goal}</p>
-        <div className="flex flex-wrap gap-1.5">
+
+        <p className="mb-3 line-clamp-2 min-h-[2.5rem] text-[13px] leading-relaxed text-ink-1">{m.goal}</p>
+
+        <div className="mb-3 flex flex-wrap gap-1">
           {m.requiredCapabilities.map((c) => (
             <Badge key={c}>{c}</Badge>
           ))}
         </div>
-        <div className="mt-3 flex flex-wrap gap-3 font-mono text-[12px] text-ink-1">
-          <span>{m.agentsActive} agents</span>
-          <span>{(m.elapsedMs / 1000).toFixed(0)}s</span>
-          <span>${m.costUsd.toFixed(2)}</span>
-          {m.progressPhase && <span>{m.progressPhase}</span>}
+
+        {/* progress */}
+        <div className="mb-3 h-1 overflow-hidden rounded-full bg-bg-3">
+          <div
+            className={cn(
+              'h-full rounded-full transition-all',
+              m.state === 'failed' ? 'bg-fail' : m.state === 'awaiting_approval' ? 'bg-warn' : m.state === 'succeeded' ? 'bg-ok' : 'bg-live',
+            )}
+            style={{ width: `${phasePct}%` }}
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-ink-2">
+          <span className="text-ink-1">{m.agentsActive} agents</span>
+          <span>{formatElapsed(m.elapsedMs)}</span>
+          <span className="text-ink-0">${m.costUsd.toFixed(2)}</span>
+          {m.progressPhase && <span className="ml-auto uppercase tracking-wide">{m.progressPhase}</span>}
         </div>
       </Card>
     </Link>
