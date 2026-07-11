@@ -1,98 +1,18 @@
-# Hermes Mission Control UI
+# Mission Control UI (moved into monorepo)
 
-**IDE for agent systems** — a Host Interface client for the AESP / Hermes Agent OS.
+**Canonical location:**  
+https://github.com/kishoreHQ/AESP-Reference-Implementation/tree/main/ui
 
-This UI sits **above** the kernel (INV-11). It never talks to provider SDKs or databases directly.
+This standalone repo is retained for history/discoverability only.
 
-```
-Mission Control UI  →  Host Interface (/api/v1/…)  →  Agent OS kernel (aespd)
-```
-
-## Run on your Mac (two repos)
-
-You need **two processes** (two terminal windows), because kernel and UI are separate repos.
-
-### Terminal 1 — Agent OS kernel
+## Run (from monorepo)
 
 ```bash
 cd ~/git/AESP-Reference-Implementation
-make build
-./bin/aespd serve :8080
+make install-ui
+make dev
+# → http://127.0.0.1:5173  (UI)
+# → http://127.0.0.1:8080  (kernel)
 ```
 
-Leave this running. Check: http://127.0.0.1:8080/api/v1/health
-
-### Terminal 2 — Mission Control UI
-
-```bash
-cd ~/git/hermes-mission-control-ui
-npm install          # first time only
-VITE_USE_MOCKS=0 npm run dev -- --host 127.0.0.1 --port 5173
-```
-
-Then open: **http://127.0.0.1:5173** (or http://localhost:5173)
-
-> If the page says “site can’t be reached”, the UI process is not running.
-> Opening the URL alone does nothing — you must start `npm run dev` first.
-
-### One-liner helper
-
-```bash
-~/git/hermes-mission-control-ui/scripts/run-local.sh
-```
-
-### UI only (no kernel — mocks)
-
-```bash
-~/git/hermes-mission-control-ui/scripts/run-ui-only.sh
-```
-
----
-
-## Quick start (P2 local, mocks)
-
-```bash
-cd hermes-mission-control-ui
-npm install
-npm run dev
-# open http://localhost:5173
-```
-
-Mocks implement the full §6 API contract via MSW (default on localhost).
-
-### Live against Agent OS
-
-```bash
-# terminal 1 — Agent OS with Host API
-cd ../AESP-Reference-Implementation
-make build && ./bin/aespd serve :8080
-
-# terminal 2 — UI (proxy /api → :8080). Force live:
-cd ../hermes-mission-control-ui
-VITE_USE_MOCKS=0 npm run dev
-```
-
-## Profiles
-
-| Profile | How |
-|---------|-----|
-| P2 Local-first | `npm run dev` on localhost (mocks by default) |
-| P1 Platform | static `dist/` behind Mission Control / any static host |
-| P3 Embedded | `mountHermesUI(el, { baseUrl, token })` from `src/embed.ts` |
-
-## Scripts
-
-| Command | Purpose |
-|---------|---------|
-| `npm run dev` | Dev server |
-| `npm run build` | Production bundle → `dist/` |
-| `npm run preview` | Preview production build |
-| `npm run typecheck` | TypeScript |
-
-## Design
-
-Flight-operations console. Signature **Mission Spine** rail. Tokens in `src/shared/tokens.css` (no raw hex in components).
-
-## Spec
-
-See UI specification companion doc (UI-ARCH … UI-GATE-5). Gate artifacts under `docs/gates/`.
+Do not open PRs here for new features — open them against `AESP-Reference-Implementation`.
