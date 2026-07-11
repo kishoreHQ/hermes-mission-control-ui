@@ -8,6 +8,47 @@ This UI sits **above** the kernel (INV-11). It never talks to provider SDKs or d
 Mission Control UI  →  Host Interface (/api/v1/…)  →  Agent OS kernel (aespd)
 ```
 
+## Run on your Mac (two repos)
+
+You need **two processes** (two terminal windows), because kernel and UI are separate repos.
+
+### Terminal 1 — Agent OS kernel
+
+```bash
+cd ~/git/AESP-Reference-Implementation
+make build
+./bin/aespd serve :8080
+```
+
+Leave this running. Check: http://127.0.0.1:8080/api/v1/health
+
+### Terminal 2 — Mission Control UI
+
+```bash
+cd ~/git/hermes-mission-control-ui
+npm install          # first time only
+VITE_USE_MOCKS=0 npm run dev -- --host 127.0.0.1 --port 5173
+```
+
+Then open: **http://127.0.0.1:5173** (or http://localhost:5173)
+
+> If the page says “site can’t be reached”, the UI process is not running.
+> Opening the URL alone does nothing — you must start `npm run dev` first.
+
+### One-liner helper
+
+```bash
+~/git/hermes-mission-control-ui/scripts/run-local.sh
+```
+
+### UI only (no kernel — mocks)
+
+```bash
+~/git/hermes-mission-control-ui/scripts/run-ui-only.sh
+```
+
+---
+
 ## Quick start (P2 local, mocks)
 
 ```bash
