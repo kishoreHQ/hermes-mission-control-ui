@@ -38,6 +38,7 @@ export function MissionsPage() {
   const launch = useLaunchMission()
   const toast = useUi((s) => s.pushToast)
   const [q, setQ] = useState('')
+  const [view, setView] = useState<'board' | 'kanban'>('board')
   const profile = detectProfile()
 
   const filtered = useMemo(() => {
@@ -64,8 +65,10 @@ export function MissionsPage() {
     <div className="page anim-in">
       <header className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-2">Operations</p>
-          <h1 className="page-title">Missions</h1>
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-2">Orchestration</p>
+          <h1 className="page-title">
+            Mission <span className="text-accent">board</span>
+          </h1>
           <p className="page-sub">
             {profile.label}
             <span className="text-ink-2"> · </span>
@@ -73,6 +76,21 @@ export function MissionsPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-[10px] border border-[var(--line)] bg-bg-1 p-0.5">
+            {(['board', 'kanban'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setView(v)}
+                className={cn(
+                  'rounded-[8px] px-3 py-1.5 text-[12px] font-semibold capitalize',
+                  view === v ? 'bg-[rgba(0,191,255,0.15)] text-accent' : 'text-ink-2 hover:text-ink-0',
+                )}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
           <div className="relative">
             <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-2">
               <IconSearch />
@@ -115,8 +133,34 @@ export function MissionsPage() {
         />
       )}
 
+      {!isLoading && !error && view === 'kanban' && (
+        <div className="grid gap-3 md:grid-cols-3">
+          {[
+            { title: 'Pending', filter: (m: Mission) => m.state === 'queued' || m.state === 'awaiting_approval', tone: 'warn' },
+            { title: 'In progress', filter: (m: Mission) => m.state === 'running', tone: 'live' },
+            { title: 'Done', filter: (m: Mission) => m.state === 'succeeded' || m.state === 'failed' || m.state === 'cancelled', tone: 'ok' },
+          ].map((col) => {
+            const items = filtered.filter(col.filter)
+            return (
+              <div key={col.title} className="panel-glass min-h-[20rem] p-3">
+                <div className="section-label !mb-3">
+                  {col.title}
+                  <span className="font-mono normal-case tracking-normal text-ink-2">{items.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {items.map((m) => (
+                    <MissionCard key={m.id} m={m} compact />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       {!isLoading &&
         !error &&
+        view === 'board' &&
         groups.map((g) => {
           const items = filtered.filter(g.filter)
           if (!items.length) return null
@@ -149,7 +193,7 @@ export function MissionsPage() {
   )
 }
 
-function MissionCard({ m }: { m: Mission }) {
+function MissionCard({ m, compact }: { m: Mission; compact?: boolean }) {
   const phasePct =
     m.state === 'succeeded' ? 100 : m.state === 'failed' ? 100 : m.state === 'queued' ? 8 : m.state === 'awaiting_approval' ? 65 : 45
 
@@ -158,7 +202,8 @@ function MissionCard({ m }: { m: Mission }) {
       <Card
         className={cn(
           'card-state-' + m.state,
-          'h-full p-4 hover:border-line-strong hover:bg-bg-2/40 group-focus-visible:ring-2 group-focus-visible:ring-accent',
+          'h-full p-4 hover:border-[rgba(0,191,255,0.35)] hover:glow-cyan group-focus-visible:ring-2 group-focus-visible:ring-accent',
+          compact && 'p-3',
         )}
       >
         <div className="mb-3 flex items-start justify-between gap-3">

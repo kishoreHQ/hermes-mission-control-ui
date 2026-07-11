@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useApprovals, useHealth, useMissions } from '@/shared/api/hooks'
 import { MissionSpine } from '@/shared/spine/MissionSpine'
 import { detectProfile } from '@/profiles/detect'
@@ -21,14 +21,33 @@ import {
   IconSpine,
 } from '@/shared/ui/Icons'
 
-const nav = [
-  { to: '/', label: 'Missions', icon: IconMissions },
-  { to: '/approvals', label: 'Approvals', icon: IconApprovals },
-  { to: '/fleet', label: 'Fleet', icon: IconFleet },
-  { to: '/memory', label: 'Memory', icon: IconMemory },
-  { to: '/artifacts', label: 'Artifacts', icon: IconArtifacts },
-  { to: '/evaluations', label: 'Evaluations', icon: IconEval },
-  { to: '/settings', label: 'Settings', icon: IconSettings },
+const sections: { label: string; items: { to: string; label: string; icon: typeof IconMissions; end?: boolean }[] }[] = [
+  {
+    label: 'Main',
+    items: [
+      { to: '/', label: 'Dashboard', icon: IconLogo, end: true },
+      { to: '/missions', label: 'Missions', icon: IconMissions },
+      { to: '/approvals', label: 'Approvals', icon: IconApprovals },
+    ],
+  },
+  {
+    label: 'Orchestration',
+    items: [
+      { to: '/fleet', label: 'Fleet', icon: IconFleet },
+      { to: '/evaluations', label: 'Evaluations', icon: IconEval },
+    ],
+  },
+  {
+    label: 'Knowledge',
+    items: [
+      { to: '/memory', label: 'Memory', icon: IconMemory },
+      { to: '/artifacts', label: 'Artifacts', icon: IconArtifacts },
+    ],
+  },
+  {
+    label: 'Config',
+    items: [{ to: '/settings', label: 'Settings', icon: IconSettings }],
+  },
 ]
 
 export function AppShell() {
@@ -41,6 +60,12 @@ export function AppShell() {
   const qc = useQueryClient()
   const pending = approvals.data?.length ?? 0
   const healthy = health.data?.status === 'ok'
+  const [clock, setClock] = useState(() => new Date().toLocaleTimeString([], { hour12: false }))
+
+  useEffect(() => {
+    const t = setInterval(() => setClock(new Date().toLocaleTimeString([], { hour12: false })), 1000)
+    return () => clearInterval(t)
+  }, [])
 
   useEffect(() => {
     EventBridge.connect()
@@ -56,99 +81,123 @@ export function AppShell() {
     }
   }, [qc])
 
+  const showSpine = loc.pathname.startsWith('/missions/')
+
   return (
     <div className="flex h-full min-h-0 flex-col bg-bg-0 text-ink-0">
-      {/* Desktop */}
       <div className="hidden min-h-0 flex-1 md:flex">
+        {/* Sidebar — Control Hub style */}
         <nav
           className={cn(
-            'flex shrink-0 flex-col border-r border-line bg-bg-1/90 backdrop-blur-sm transition-[width] duration-[var(--motion)]',
-            railExpanded ? 'w-[232px]' : 'w-[68px]',
+            'flex shrink-0 flex-col border-r border-[var(--line)] bg-bg-1/95 backdrop-blur-md transition-[width] duration-[var(--motion)]',
+            railExpanded ? 'w-[240px]' : 'w-[72px]',
           )}
           aria-label="Primary"
         >
           <button
-            className="group flex h-[3.5rem] items-center gap-2.5 border-b border-line px-3.5 text-left"
+            className="flex h-16 items-center gap-2.5 border-b border-[var(--line)] px-3.5 text-left"
             onClick={toggleRail}
             aria-label="Toggle navigation"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[var(--accent-dim)] text-accent">
+            <span className="relative flex h-9 w-9 items-center justify-center rounded-[10px] border border-[rgba(0,191,255,0.3)] bg-[rgba(0,191,255,0.1)] text-accent glow-cyan">
               <IconLogo size={18} />
             </span>
             {railExpanded && (
               <div className="min-w-0">
-                <div className="truncate font-display text-[13px] font-bold tracking-tight">Mission Control</div>
-                <div className="truncate text-[10px] uppercase tracking-[0.08em] text-ink-2">Agent OS</div>
+                <div className="truncate font-display text-[12px] font-bold tracking-[0.12em] text-ink-0">
+                  CONTROL<span className="text-accent">HUB</span>
+                </div>
+                <div className="truncate font-mono text-[9px] text-ink-2">AESP Agent OS · host UI</div>
               </div>
             )}
           </button>
 
-          <div className="flex flex-1 flex-col gap-0.5 p-2">
-            {nav.map((n) => {
-              const Icon = n.icon
-              return (
-                <NavLink
-                  key={n.to}
-                  to={n.to}
-                  end={n.to === '/'}
-                  title={n.label}
-                  className={({ isActive }) =>
-                    cn(
-                      'relative flex min-h-10 items-center gap-3 rounded-[8px] px-2.5 text-[13px] font-medium text-ink-1 transition-colors',
-                      'hover:bg-bg-2 hover:text-ink-0',
-                      isActive && 'bg-[var(--accent-dim)] text-accent',
-                      !railExpanded && 'justify-center px-0',
+          <div className="flex-1 overflow-y-auto px-2 py-3">
+            {sections.map((sec) => (
+              <div key={sec.label} className="mb-4">
+                {railExpanded && (
+                  <div className="mb-1.5 px-2 text-[9px] font-bold uppercase tracking-[0.16em] text-ink-2">
+                    {sec.label}
+                  </div>
+                )}
+                <div className="flex flex-col gap-0.5">
+                  {sec.items.map((n) => {
+                    const Icon = n.icon
+                    return (
+                      <NavLink
+                        key={n.to}
+                        to={n.to}
+                        end={n.end}
+                        title={n.label}
+                        className={({ isActive }) =>
+                          cn(
+                            'relative flex min-h-10 items-center gap-3 rounded-[10px] px-2.5 text-[13px] font-medium transition-all',
+                            'text-ink-1 hover:bg-bg-2 hover:text-ink-0',
+                            isActive &&
+                              'bg-gradient-to-r from-[rgba(0,191,255,0.16)] to-transparent text-cyan-100 shadow-[inset_0_0_0_1px_rgba(0,191,255,0.15)]',
+                            !railExpanded && 'justify-center px-0',
+                          )
+                        }
+                      >
+                        {({ isActive }) => (
+                          <>
+                            {isActive && (
+                              <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r bg-accent shadow-[0_0_8px_rgba(0,191,255,0.8)]" />
+                            )}
+                            <Icon size={18} className={isActive ? 'text-accent' : undefined} />
+                            {railExpanded && <span className="truncate">{n.label}</span>}
+                            {n.to === '/approvals' && pending > 0 && (
+                              <span
+                                className={cn(
+                                  'flex h-5 min-w-5 items-center justify-center rounded-full bg-warn px-1 font-mono text-[10px] font-bold text-[#1a1006] shadow-[0_0_12px_rgba(255,159,28,0.4)]',
+                                  railExpanded ? 'ml-auto' : 'absolute right-1 top-1',
+                                )}
+                              >
+                                {pending}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </NavLink>
                     )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
-                        <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-accent" />
-                      )}
-                      <Icon className={cn(isActive ? 'text-accent' : 'text-ink-1')} size={18} />
-                      {railExpanded && <span className="truncate">{n.label}</span>}
-                      {n.to === '/approvals' && pending > 0 && (
-                        <span
-                          className={cn(
-                            'flex h-5 min-w-5 items-center justify-center rounded-full bg-warn px-1 font-mono text-[10px] font-bold text-[#1a1206]',
-                            railExpanded ? 'ml-auto' : 'absolute right-1 top-1',
-                          )}
-                        >
-                          {pending}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </NavLink>
-              )
-            })}
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="space-y-2 border-t border-line p-3">
+          <div className="space-y-2 border-t border-[var(--line)] p-3">
             <div
               className={cn(
-                'flex items-center gap-2 rounded-[8px] border border-line bg-bg-0/60 px-2 py-1.5',
-                !railExpanded && 'justify-center px-1',
+                'flex items-center gap-2 rounded-[10px] border border-[var(--line)] bg-bg-0/70 px-2.5 py-2',
+                !railExpanded && 'justify-center',
               )}
             >
               <StatusDot status={healthy ? 'ok' : 'degraded'} />
               {railExpanded && (
                 <div className="min-w-0">
-                  <div className="truncate text-[11px] font-medium text-ink-0">{profile.label}</div>
+                  <div className="truncate text-[11px] font-semibold text-ink-0">{profile.label}</div>
                   <div className="truncate font-mono text-[10px] text-ink-2">
-                    {profile.useMocks ? 'mocks' : 'live'} · {healthy ? 'connected' : 'degraded'}
+                    {clock} · {profile.useMocks ? 'mocks' : 'live'}
                   </div>
                 </div>
               )}
             </div>
             {railExpanded && (
-              <button
-                className="w-full rounded-[6px] px-2 py-1.5 text-left text-[11px] text-ink-1 hover:bg-bg-2 hover:text-ink-0"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              >
-                Theme · {theme}
-              </button>
+              <div className="flex gap-1">
+                <button
+                  className="flex-1 rounded-[8px] border border-[var(--line)] bg-bg-2 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-ink-1 hover:border-[rgba(0,191,255,0.35)] hover:text-accent"
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                >
+                  {theme}
+                </button>
+                <button
+                  className="flex-1 rounded-[8px] border border-[var(--line)] bg-bg-2 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-ink-1 hover:border-[rgba(0,191,255,0.35)] hover:text-accent"
+                  onClick={() => setSpineOpen(!spineOpen)}
+                >
+                  spine
+                </button>
+              </div>
             )}
           </div>
         </nav>
@@ -157,44 +206,45 @@ export function AppShell() {
           <Outlet />
         </main>
 
-        <div
-          className={cn(
-            'hidden shrink-0 border-l border-line transition-[width] lg:block',
-            spineOpen ? 'w-[300px]' : 'w-0 overflow-hidden border-0',
-          )}
-        >
-          <MissionSpine missions={missions.data} selectedMissionId={loc.pathname.split('/')[2]} />
-        </div>
+        {(showSpine || spineOpen) && (
+          <div
+            className={cn(
+              'hidden shrink-0 border-l border-[var(--line)] bg-bg-1/90 lg:block',
+              'w-[300px]',
+            )}
+          >
+            <MissionSpine missions={missions.data} selectedMissionId={loc.pathname.split('/')[2]} />
+          </div>
+        )}
       </div>
 
       {/* Mobile */}
       <div className="flex min-h-0 flex-1 flex-col md:hidden">
-        <header className="flex h-12 items-center justify-between border-b border-line bg-bg-1/95 px-3 backdrop-blur">
+        <header className="flex h-12 items-center justify-between border-b border-[var(--line)] bg-bg-1/95 px-3 backdrop-blur-md">
           <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-[var(--accent-dim)] text-accent">
-              <IconLogo size={16} />
+            <span className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-[rgba(0,191,255,0.3)] bg-[rgba(0,191,255,0.1)] text-accent">
+              <IconLogo size={14} />
             </span>
-            <span className="font-display text-[13px] font-semibold tracking-tight">Mission Control</span>
+            <span className="font-display text-[12px] font-bold tracking-[0.1em]">
+              CONTROL<span className="text-accent">HUB</span>
+            </span>
           </div>
-          <span className="rounded-full border border-line bg-bg-0 px-2 py-0.5 font-mono text-[10px] text-ink-1">
-            {profile.label.replace('P2 ', '').replace('P1 ', '')}
+          <span className="online-pill text-[9px]">
+            <span className="h-1.5 w-1.5 rounded-full bg-neon-green spine-pulse" />
+            online
           </span>
         </header>
         <main className="min-h-0 flex-1 overflow-auto pb-[calc(3.75rem+env(safe-area-inset-bottom))]">
-          {loc.pathname === '/spine' ? (
-            <MissionSpine missions={missions.data} compact />
-          ) : (
-            <Outlet />
-          )}
+          <Outlet />
         </main>
         <nav
-          className="fixed bottom-0 left-0 right-0 z-40 grid h-[3.75rem] grid-cols-5 border-t border-line bg-bg-1/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md"
+          className="fixed bottom-0 left-0 right-0 z-40 grid h-[3.75rem] grid-cols-5 border-t border-[var(--line)] bg-bg-1/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md"
           aria-label="Mobile"
         >
           {[
-            { to: '/', label: 'Missions', icon: IconMissions },
-            { to: '/approvals', label: 'Approvals', icon: IconApprovals, badge: pending },
-            { to: '/spine', label: 'Spine', icon: IconSpine },
+            { to: '/', label: 'Home', icon: IconLogo },
+            { to: '/approvals', label: 'Approve', icon: IconApprovals, badge: pending },
+            { to: '/missions', label: 'Missions', icon: IconMissions },
             { to: '/fleet', label: 'Fleet', icon: IconFleet },
             { to: '/settings', label: 'More', icon: IconSettings },
           ].map((t) => {
@@ -214,7 +264,7 @@ export function AppShell() {
                 <Icon size={18} />
                 {t.label}
                 {t.badge ? (
-                  <span className="absolute right-[18%] top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-warn px-1 font-mono text-[9px] font-bold text-[#1a1206]">
+                  <span className="absolute right-[16%] top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-warn px-1 font-mono text-[9px] font-bold text-[#1a1006]">
                     {t.badge}
                   </span>
                 ) : null}
@@ -225,13 +275,13 @@ export function AppShell() {
       </div>
 
       <button
-        className="fixed bottom-4 right-4 z-30 hidden items-center gap-1.5 rounded-[8px] border border-line bg-bg-1 px-3 py-2 text-[12px] font-medium text-ink-1 shadow-none hover:border-line-strong hover:text-ink-0 md:flex lg:hidden"
+        className="fixed bottom-4 right-4 z-30 hidden items-center gap-1.5 rounded-[10px] border border-[var(--line)] bg-bg-1 px-3 py-2 text-[12px] font-medium text-ink-1 hover:border-[rgba(0,191,255,0.4)] hover:text-accent hover:glow-cyan md:flex lg:hidden"
         onClick={() => setSpineOpen(!spineOpen)}
       >
         <IconSpine size={14} /> Spine
       </button>
-      {spineOpen && (
-        <div className="fixed inset-y-0 right-0 z-40 hidden w-[300px] border-l border-line bg-bg-1 md:block lg:hidden">
+      {spineOpen && !showSpine && (
+        <div className="fixed inset-y-0 right-0 z-40 hidden w-[300px] border-l border-[var(--line)] bg-bg-1 md:block lg:hidden">
           <MissionSpine missions={missions.data} />
         </div>
       )}

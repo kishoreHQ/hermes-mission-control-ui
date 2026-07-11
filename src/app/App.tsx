@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './AppShell'
+import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { MissionsPage } from '@/features/missions/MissionsPage'
 import { MissionDetailPage } from '@/features/missions/MissionDetailPage'
 import { ApprovalsPage } from '@/features/approvals/ApprovalsPage'
@@ -14,7 +15,8 @@ export default function App() {
   return (
     <Routes>
       <Route element={<AppShell />}>
-        <Route index element={<MissionsPage />} />
+        <Route index element={<DashboardPage />} />
+        <Route path="missions" element={<MissionsPage />} />
         <Route path="missions/:id" element={<MissionDetailPage />} />
         <Route path="approvals" element={<ApprovalsPage />} />
         <Route path="fleet" element={<FleetPage />} />
@@ -23,7 +25,7 @@ export default function App() {
         <Route path="evaluations" element={<EvaluationsPage />} />
         <Route path="replay/:runId" element={<ReplayPage />} />
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="spine" element={<Navigate to="/" replace />} />
+        <Route path="spine" element={<Navigate to="/missions" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

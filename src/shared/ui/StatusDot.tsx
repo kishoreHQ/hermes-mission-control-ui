@@ -1,8 +1,8 @@
 import { cn } from '@/shared/lib/cn'
 
 const map: Record<string, string> = {
-  running: 'bg-live spine-pulse',
-  live: 'bg-live spine-pulse',
+  running: 'bg-accent spine-pulse',
+  live: 'bg-accent spine-pulse',
   awaiting_approval: 'bg-warn',
   blocked: 'bg-warn',
   pending: 'bg-ink-2',
@@ -29,37 +29,29 @@ export function StatusDot({ status, label }: { status: string; label?: string })
         )}
         aria-hidden
       />
-      {label != null && (
-        <span className="text-[12px] capitalize text-ink-1">{pretty}</span>
-      )}
+      {label != null && <span className="text-[12px] capitalize text-ink-1">{pretty}</span>}
       <span className="sr-only">{pretty}</span>
     </span>
   )
 }
 
 export function StatusPill({ status }: { status: string }) {
-  const tone =
-    status === 'running'
-      ? 'live'
-      : status === 'awaiting_approval' || status === 'blocked'
-        ? 'warn'
-        : status === 'succeeded' || status === 'ok'
-          ? 'ok'
-          : status === 'failed'
-            ? 'fail'
-            : 'default'
   const styles: Record<string, string> = {
-    live: 'bg-[var(--live-dim)] text-live border-live/25',
-    warn: 'bg-[var(--warn-dim)] text-warn border-warn/30',
-    ok: 'bg-[var(--ok-dim)] text-ok border-ok/25',
-    fail: 'bg-[var(--fail-dim)] text-fail border-fail/25',
-    default: 'bg-bg-2 text-ink-1 border-line',
+    running: 'bg-[var(--live-dim)] text-accent border-[rgba(0,191,255,0.35)]',
+    awaiting_approval: 'bg-[var(--warn-dim)] text-warn border-[rgba(255,159,28,0.4)]',
+    blocked: 'bg-[var(--warn-dim)] text-warn border-[rgba(255,159,28,0.4)]',
+    succeeded: 'bg-[var(--ok-dim)] text-ok border-[rgba(163,255,18,0.35)]',
+    ok: 'bg-[var(--ok-dim)] text-ok border-[rgba(163,255,18,0.35)]',
+    failed: 'bg-[var(--fail-dim)] text-fail border-[rgba(248,113,113,0.35)]',
+    queued: 'bg-bg-2 text-ink-1 border-[var(--line)]',
+    cancelled: 'bg-bg-2 text-ink-1 border-[var(--line)]',
+    pending: 'bg-bg-2 text-ink-1 border-[var(--line)]',
   }
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium capitalize',
-        styles[tone],
+        'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-semibold capitalize',
+        styles[status] || styles.pending,
       )}
     >
       <StatusDot status={status} />
